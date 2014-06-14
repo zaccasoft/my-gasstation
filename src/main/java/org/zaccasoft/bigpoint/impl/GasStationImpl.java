@@ -36,9 +36,9 @@ public class GasStationImpl implements GasStation {
 		//init properties
 		try {
 			Properties p = loadProperties();
-			gasPrices.put(GasType.DIESEL, Double.valueOf(p.getProperty("diesel.default.price", "-2")));
-			gasPrices.put(GasType.REGULAR, Double.valueOf(p.getProperty("regular.default.price", "-2")));
-			gasPrices.put(GasType.SUPER, Double.valueOf(p.getProperty("super.default.price", "-2")));
+			setPrice(GasType.DIESEL, Double.valueOf(p.getProperty("diesel.default.price", "-2")));
+			setPrice(GasType.REGULAR, Double.valueOf(p.getProperty("regular.default.price", "-2")));
+			setPrice(GasType.SUPER, Double.valueOf(p.getProperty("super.default.price", "-2")));
 		} catch (FileNotFoundException fnfe) {
 			log.fatal("Properties file is missing", fnfe);
 		} catch (IOException ioe) {
@@ -68,10 +68,27 @@ public class GasStationImpl implements GasStation {
 		gasPumps.add(gasPump);
 	}
 
-	public double buyGas(GasType arg0, double arg1, double arg2)
+	public double buyGas(GasType type, double amountInLiters, double maxPricePerLiter)
 			throws NotEnoughGasException, GasTooExpensiveException {
-		// TODO Auto-generated method stub
-		return 0;
+		double priceToPay = -1d;
+		
+		double currentPrice = getPrice(type);
+		
+		if(currentPrice > maxPricePerLiter) {
+			throw new GasTooExpensiveException();
+		}
+		
+		for(GasPump p : gasPumps) {
+			if(p.getGasType().equals(type) && p.getRemainingAmount() >= amountInLiters) {
+				//serve
+				priceToPay = amountInLiters * currentPrice;
+				return priceToPay;
+			} else {
+				continue;
+			}
+		}
+		
+		throw new NotEnoughGasException();
 	}
 
 	public Collection<GasPump> getGasPumps() {
@@ -113,9 +130,8 @@ public class GasStationImpl implements GasStation {
 		return 0;
 	}
 
-	public void setPrice(GasType arg0, double arg1) {
-		// TODO Auto-generated method stub
-
+	public void setPrice(GasType gasType, double price) {
+		gasPrices.put(gasType, price);
 	}
 
 }
