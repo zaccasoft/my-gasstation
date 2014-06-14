@@ -26,6 +26,8 @@ public class GasStationImpl implements GasStation {
 
 	private int sales = -1;
 
+	private double revenue;
+
 	public GasStationImpl() {
 		super();
 
@@ -88,6 +90,8 @@ public class GasStationImpl implements GasStation {
 				p.pumpGas(amountInLiters);
 				log.debug("From "+originalAmount+" asked for "+amountInLiters + " left "+p.getRemainingAmount());
 				
+				revenue =+ priceToPay;
+				
 				return priceToPay;
 			} else {
 				continue;
@@ -132,8 +136,7 @@ public class GasStationImpl implements GasStation {
 	}
 
 	public double getRevenue() {
-		// TODO Auto-generated method stub
-		return 0;
+		return revenue;
 	}
 
 	public void setPrice(GasType gasType, double price) {

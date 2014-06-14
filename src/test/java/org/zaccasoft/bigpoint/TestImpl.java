@@ -101,10 +101,14 @@ public class TestImpl {
 		
 		GasPump gp1 = new GasPump(GasType.DIESEL, amount);
 		gsi.addGasPump(gp1);
-		
+		double sold = 0d;
 		try {
-			gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
+			sold = gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
 			log.debug("Yeah, enough gas to erogate!");
+			
+			assertEquals(gsi.getRevenue(), sold, 0);
+			log.debug("Our first gas sale and our firse revenue!");
+			
 		} catch(Exception e) {
 			fail();
 		}
@@ -130,6 +134,10 @@ public class TestImpl {
 			assertEquals(testAmount, boughtAmount, 0);
 			
 			log.debug("Bought for: " + boughtAmount);
+			double revenue = gsi.getRevenue();
+			assertEquals(boughtAmount + sold, revenue, 0);
+			log.debug("Yeah, 2 sales for revenue: "+ revenue);
+			
 		} catch(Exception e) {
 			fail();
 		}
