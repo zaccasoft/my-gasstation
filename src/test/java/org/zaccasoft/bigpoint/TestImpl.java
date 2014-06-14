@@ -9,6 +9,7 @@ import net.bigpoint.assessment.gasstation.GasPump;
 import net.bigpoint.assessment.gasstation.GasType;
 
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.zaccasoft.bigpoint.impl.GasStationImpl;
 
@@ -16,42 +17,65 @@ public class TestImpl {
 
 	private static Logger log = Logger.getLogger("my-gasstation");
 
-	@Test
-	public void testImpl() {
-		assertTrue(true);
-		log.debug("yeah, it logs");
+	private GasStationImpl gsi;
+
+	@Before
+	public void setUp() {
+		gsi = new GasStationImpl();
 	}
-	
-	
+
 	@Test
 	public void testPropertiesloading() {
 		log.debug("Starting testPropertiesloading()");
-		
-		GasStationImpl gsi = new GasStationImpl();
-		
-		for(GasType t : GasType.values()) {
+
+		for (GasType t : GasType.values()) {
 			double currentValue = gsi.getPrice(t);
 			assertEquals(1.0d, currentValue, 0);
-			log.debug("Loaded value for "+t+" is "+currentValue);
+			log.debug("Loaded value for " + t + " is " + currentValue);
 		}
-		
+
 	}
+
 	@Test
-	public void testGSI() {
-		GasStationImpl gsi = new GasStationImpl();
+	public void testGasPumps() {
+		log.debug("Starting testGasPumps()");
+		
+		double initialAmount = 10d;
+		
+		double pumpAmount = 1d;
 		
 		assertTrue(gsi.getGasPumps().isEmpty());
-		
-		GasPump gp1 = new GasPump(GasType.DIESEL, 10d);		
-		
+
+		GasPump gp1 = new GasPump(GasType.DIESEL, initialAmount);
+
 		gsi.addGasPump(gp1);
-		
+
 		assertFalse(gsi.getGasPumps().isEmpty());
-		
+
 		assertEquals(1, gsi.getGasPumps().size());
-		
+
 		assertNotNull(gsi.getPrice(GasType.DIESEL));
+
+		GasPump gp2 = new GasPump(GasType.REGULAR, initialAmount);
+		gp2.pumpGas(pumpAmount);
+		assertEquals(initialAmount - pumpAmount, gp2.getRemainingAmount(), 0);
 		
+		/**
+		 * TODO: GasPump can erogate even if has a remaining amount <=0, an exception should be thrown
+		 */
+		gp2.pumpGas(initialAmount);
+		log.debug("Remaining amount: "+gp2.getRemainingAmount());
+		
+		
+	}
+	
+	@Test
+	public void testSales() {
+		log.debug("Starting testSales()");
+		
+		assertEquals(0, gsi.getNumberOfSales());
+		
+		assertNotNull(gsi.getNumberOfSales());
 	}
 
 }

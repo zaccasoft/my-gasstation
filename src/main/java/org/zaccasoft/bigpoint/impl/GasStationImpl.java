@@ -24,13 +24,16 @@ public class GasStationImpl implements GasStation {
 	private Collection<GasPump> gasPumps = new ArrayList<GasPump>();
 	private Map<GasType, Double> gasPrices = new HashMap<GasType, Double>();
 
+	private int sales = -1;
+
 	public GasStationImpl() {
 		super();
 
 		init();
 	}
-
-	private void init() {
+	
+	public void init() {
+		//init properties
 		try {
 			Properties p = loadProperties();
 			gasPrices.put(GasType.DIESEL, Double.valueOf(p.getProperty("diesel.default.price", "-2")));
@@ -44,7 +47,8 @@ public class GasStationImpl implements GasStation {
 			log.fatal("File not found", npe);
 		}
 		
-		
+		//init variables
+		sales = 0;
 		
 	}
 
@@ -85,8 +89,7 @@ public class GasStationImpl implements GasStation {
 	}
 
 	public int getNumberOfSales() {
-		// TODO Auto-generated method stub
-		return 0;
+		return sales;
 	}
 
 	/**
