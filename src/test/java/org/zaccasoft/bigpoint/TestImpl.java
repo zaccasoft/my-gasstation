@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import net.bigpoint.assessment.gasstation.GasPump;
 import net.bigpoint.assessment.gasstation.GasType;
@@ -12,6 +13,7 @@ import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.zaccasoft.bigpoint.impl.GasStationImpl;
 
@@ -83,16 +85,70 @@ public class TestImpl {
 	@Test
 	public void testBuyGas() {
 		log.debug("Starting testBuyGas()");
-
+		
+		double price = 1.0d;
+		gsi.setPrice(GasType.DIESEL, price);
+		
+		double amount = 10d;
+		double expectedPrice = 1.0d;
+		
 		try {
-			double boughtAmount = gsi.buyGas(GasType.DIESEL, 10d, 11d);
-			log.debug("Bought for: " + boughtAmount);
-		} catch (NotEnoughGasException nege) {
+			gsi.buyGas(GasType.DIESEL, amount, expectedPrice);			
+		} catch(Exception e) {
+			assertTrue(e instanceof NotEnoughGasException);
 			log.debug("Not enough gas to erogate");
-		} catch (GasTooExpensiveException gtee) {
+		}
+		
+		GasPump gp1 = new GasPump(GasType.DIESEL, amount);
+		gsi.addGasPump(gp1);
+		
+		try {
+			gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
+			log.debug("Yeah, enough gas to erogate!");
+		} catch(Exception e) {
+			fail();
+		}
+		
+		expectedPrice = 0.9d;
+		try {
+			gsi.buyGas(GasType.DIESEL, amount, expectedPrice);			
+		} catch(Exception e) {
+			assertTrue(e instanceof GasTooExpensiveException);
 			log.debug("Gas is too expensive, better luck next time");
 		}
-
+		
+		//to avoid the next denial of service we simply add a new pump
+		GasPump gp2 = new GasPump(GasType.DIESEL, amount);
+		gsi.addGasPump(gp2);
+		
+		try {
+			expectedPrice = 1.0d;
+			amount = 1.0d;
+			double testAmount = 1.0d;
+			
+			double boughtAmount = gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
+			assertEquals(testAmount, boughtAmount, 0);
+			
+			log.debug("Bought for: " + boughtAmount);
+		} catch(Exception e) {
+			fail();
+		}
+		
+		try {
+			expectedPrice = 1.0d;
+			amount = 1.0d;
+			double testAmount = 1.0d;
+			
+			double boughtAmount = gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
+			assertEquals(testAmount, boughtAmount, 0);
+			
+			//safe, because we just added 1 pump only
+			GasPump currentGasPump = gsi.getGasPumps().iterator().next();
+			log.debug("Bought for: " + boughtAmount + " remaining " + currentGasPump.getRemainingAmount() + "litres.");
+		} catch(Exception e) {
+			fail();
+		}
+		
 	}
 
 }

@@ -80,8 +80,14 @@ public class GasStationImpl implements GasStation {
 		
 		for(GasPump p : gasPumps) {
 			if(p.getGasType().equals(type) && p.getRemainingAmount() >= amountInLiters) {
+				double originalAmount = p.getRemainingAmount();
+				
 				//serve
 				priceToPay = amountInLiters * currentPrice;
+				
+				p.pumpGas(amountInLiters);
+				log.debug("From "+originalAmount+" asked for "+amountInLiters + " left "+p.getRemainingAmount());
+				
 				return priceToPay;
 			} else {
 				continue;
