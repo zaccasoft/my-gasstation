@@ -150,9 +150,8 @@ public class TestImpl {
 			double boughtAmount = gsi.buyGas(GasType.DIESEL, amount, expectedPrice);
 			assertEquals(testAmount, boughtAmount, 0);
 			
-			//safe, because we just added 1 pump only
-			GasPump currentGasPump = gsi.getGasPumps().iterator().next();
-			log.debug("Bought for: " + boughtAmount + " remaining " + currentGasPump.getRemainingAmount() + "litres.");
+			//we are serving from pump 2, because pump 1 is empty now
+			log.debug("Bought for: " + boughtAmount + " remaining " + gp2.getRemainingAmount() + "litres.");
 		} catch(Exception e) {
 			fail();
 		}

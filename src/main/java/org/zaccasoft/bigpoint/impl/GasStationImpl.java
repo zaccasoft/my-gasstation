@@ -26,7 +26,7 @@ public class GasStationImpl implements GasStation {
 
 	private int sales = -1;
 
-	private double revenue;
+	private double revenue = 0;
 
 	public GasStationImpl() {
 		super();
@@ -90,7 +90,9 @@ public class GasStationImpl implements GasStation {
 				p.pumpGas(amountInLiters);
 				log.debug("From "+originalAmount+" asked for "+amountInLiters + " left "+p.getRemainingAmount());
 				
-				revenue =+ priceToPay;
+				log.debug("Current revenue: "+revenue);
+				revenue += priceToPay;
+				log.debug("Updated revenue " + revenue + " due to the selling of " + priceToPay);
 				
 				return priceToPay;
 			} else {
