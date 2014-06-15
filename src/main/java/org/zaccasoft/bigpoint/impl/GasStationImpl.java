@@ -24,9 +24,13 @@ public class GasStationImpl implements GasStation {
 	private Collection<GasPump> gasPumps = new ArrayList<GasPump>();
 	private Map<GasType, Double> gasPrices = new HashMap<GasType, Double>();
 
-	private int sales = -1;
+	private int sales;
 
-	private double revenue = 0;
+	private double revenue;
+
+	private int cancelTooExpensive;
+
+	private int cancelNoGas;
 
 	public GasStationImpl() {
 		super();
@@ -51,6 +55,9 @@ public class GasStationImpl implements GasStation {
 		
 		//init variables
 		sales = 0;
+		revenue = 0;
+		cancelNoGas = 0;
+		cancelTooExpensive = 0;
 		
 	}
 
@@ -77,6 +84,7 @@ public class GasStationImpl implements GasStation {
 		double currentPrice = getPrice(type);
 		
 		if(currentPrice > maxPricePerLiter) {
+			cancelTooExpensive++;
 			throw new GasTooExpensiveException();
 		}
 		
@@ -99,7 +107,7 @@ public class GasStationImpl implements GasStation {
 				continue;
 			}
 		}
-		
+		cancelNoGas++;
 		throw new NotEnoughGasException();
 	}
 
@@ -108,13 +116,11 @@ public class GasStationImpl implements GasStation {
 	}
 
 	public int getNumberOfCancellationsNoGas() {
-		// TODO Auto-generated method stub
-		return 0;
+		return cancelNoGas;
 	}
 
 	public int getNumberOfCancellationsTooExpensive() {
-		// TODO Auto-generated method stub
-		return 0;
+		return cancelTooExpensive;
 	}
 
 	public int getNumberOfSales() {

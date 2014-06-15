@@ -13,7 +13,6 @@ import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.zaccasoft.bigpoint.impl.GasStationImpl;
 
@@ -97,6 +96,8 @@ public class TestImpl {
 		} catch(Exception e) {
 			assertTrue(e instanceof NotEnoughGasException);
 			log.debug("Not enough gas to erogate");
+			assertEquals(1, gsi.getNumberOfCancellationsNoGas());
+			log.debug("Yes, the first cancellation for no gas available");
 		}
 		
 		GasPump gp1 = new GasPump(GasType.DIESEL, amount);
@@ -119,6 +120,8 @@ public class TestImpl {
 		} catch(Exception e) {
 			assertTrue(e instanceof GasTooExpensiveException);
 			log.debug("Gas is too expensive, better luck next time");
+			assertEquals(1, gsi.getNumberOfCancellationsTooExpensive());
+			log.debug("Yes, the first cancellation for too expensive gas");
 		}
 		
 		//to avoid the next denial of service we simply add a new pump
