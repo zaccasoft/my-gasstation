@@ -87,36 +87,39 @@ public class GasStationImpl implements GasStation {
 			cancelTooExpensive++;
 			throw new GasTooExpensiveException();
 		}
-		
+
 		for (GasPump p : gasPumps) {
-			// the current pump is locked, so concurrent customers must queue
-			// and wait the gas sale
-			synchronized (p) {
-				/*
-				 * TODO: there's no isPumpFree method to check if it is free or
-				 * not. Locking the pump leads to queue too and several pumps
-				 * could not scale
-				 */
-				if (p.getGasType().equals(type) && p.getRemainingAmount() >= amountInLiters) {
-					double originalAmount = p.getRemainingAmount();
+			/*
+			 * TODO: there's no isPumpFree method to check if it is free or not.
+			 * Locking the pump leads to queue too and several pumps could not
+			 * scale
+			 */
+			if (p.getGasType().equals(type)) {
+				// the current pump is locked, so concurrent customers must
+				// queue and wait the gas sale
+				synchronized (p) {
+					if (p.getRemainingAmount() >= amountInLiters) {
+						double originalAmount = p.getRemainingAmount();
 
-					// serve
-					priceToPay = amountInLiters * currentPrice;
-					p.pumpGas(amountInLiters);
-					log.debug("From " + originalAmount + " asked for " + amountInLiters + " left "
-							+ p.getRemainingAmount());
+						// serve
+						priceToPay = amountInLiters * currentPrice;
+						p.pumpGas(amountInLiters);
+						log.debug("From " + originalAmount + " asked for " + amountInLiters + " left "
+								+ p.getRemainingAmount());
 
-					log.debug("Current revenue: " + revenue);
-					revenue += priceToPay;
-					log.debug("Updated revenue " + revenue + " due to the selling of " + priceToPay);
+						log.debug("Current revenue: " + revenue);
+						revenue += priceToPay;
+						log.debug("Updated revenue " + revenue + " due to the selling of " + priceToPay);
 
-					return priceToPay;
-				} else {
-					continue;
+						return priceToPay;
+					}
 				}
-
+			} else {
+				continue;
 			}
+
 		}
+
 		cancelNoGas++;
 		throw new NotEnoughGasException();
 	}
