@@ -37,9 +37,9 @@ public class GasStationImpl implements GasStation {
 
 		init();
 	}
-	
+
 	public void init() {
-		//init properties
+		// init properties
 		try {
 			Properties p = loadProperties();
 			setPrice(GasType.DIESEL, Double.valueOf(p.getProperty("diesel.default.price", "-2")));
@@ -49,25 +49,25 @@ public class GasStationImpl implements GasStation {
 			log.fatal("Properties file is missing", fnfe);
 		} catch (IOException ioe) {
 			log.fatal("Could not access to properties file", ioe);
-		} catch(NullPointerException npe) {
+		} catch (NullPointerException npe) {
 			log.fatal("File not found", npe);
 		}
-		
-		//init variables
+
+		// init variables
 		sales = 0;
 		revenue = 0;
 		cancelNoGas = 0;
 		cancelTooExpensive = 0;
-		
+
 	}
 
 	private Properties loadProperties() throws FileNotFoundException, IOException, NullPointerException {
 		InputStream i = getClass().getResourceAsStream("/application.properties");
 		Properties p = new Properties();
-		if(i == null) {
+		if (i == null) {
 			log.fatal("Null input stream for poroperties file");
 		}
-		
+
 		p.load(i);
 		i.close();
 		return p;
@@ -77,34 +77,44 @@ public class GasStationImpl implements GasStation {
 		gasPumps.add(gasPump);
 	}
 
-	public double buyGas(GasType type, double amountInLiters, double maxPricePerLiter)
-			throws NotEnoughGasException, GasTooExpensiveException {
+	public double buyGas(GasType type, double amountInLiters, double maxPricePerLiter) throws NotEnoughGasException,
+			GasTooExpensiveException {
 		double priceToPay = -1d;
-		
+
 		double currentPrice = getPrice(type);
-		
-		if(currentPrice > maxPricePerLiter) {
+
+		if (currentPrice > maxPricePerLiter) {
 			cancelTooExpensive++;
 			throw new GasTooExpensiveException();
 		}
 		
-		for(GasPump p : gasPumps) {
-			if(p.getGasType().equals(type) && p.getRemainingAmount() >= amountInLiters) {
-				double originalAmount = p.getRemainingAmount();
-				
-				//serve
-				priceToPay = amountInLiters * currentPrice;
-				
-				p.pumpGas(amountInLiters);
-				log.debug("From "+originalAmount+" asked for "+amountInLiters + " left "+p.getRemainingAmount());
-				
-				log.debug("Current revenue: "+revenue);
-				revenue += priceToPay;
-				log.debug("Updated revenue " + revenue + " due to the selling of " + priceToPay);
-				
-				return priceToPay;
-			} else {
-				continue;
+		for (GasPump p : gasPumps) {
+			// the current pump is locked, so concurrent customers must queue
+			// and wait the gas sale
+			synchronized (p) {
+				/*
+				 * TODO: there's no isPumpFree method to check if it is free or
+				 * not. Locking the pump leads to queue too and several pumps
+				 * could not scale
+				 */
+				if (p.getGasType().equals(type) && p.getRemainingAmount() >= amountInLiters) {
+					double originalAmount = p.getRemainingAmount();
+
+					// serve
+					priceToPay = amountInLiters * currentPrice;
+					p.pumpGas(amountInLiters);
+					log.debug("From " + originalAmount + " asked for " + amountInLiters + " left "
+							+ p.getRemainingAmount());
+
+					log.debug("Current revenue: " + revenue);
+					revenue += priceToPay;
+					log.debug("Updated revenue " + revenue + " due to the selling of " + priceToPay);
+
+					return priceToPay;
+				} else {
+					continue;
+				}
+
 			}
 		}
 		cancelNoGas++;
