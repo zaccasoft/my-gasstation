@@ -16,17 +16,35 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaccasoft.bigpoint.impl.GasStationImpl;
 
+/**
+ * Purpose of the class is to test methods and implementation of Gas Station
+ * 
+ * @author frza
+ *
+ */
 public class TestImpl {
 
+	/*
+	 * Application logger 
+	 */
 	private static Logger log = Logger.getLogger("my-gasstation");
 
+	/*
+	 * The implementation of Gas Station interface
+	 */
 	private GasStationImpl gsi;
 
+	/**
+	 * We get a fresh new Gas Station at each test iteration
+	 */
 	@Before
 	public void setUp() {
 		gsi = new GasStationImpl();
 	}
 
+	/**
+	 * Test properties (only loading, then prints out the values)
+	 */
 	@Test
 	public void testPropertiesloading() {
 		log.debug("Starting testPropertiesloading()");
@@ -39,6 +57,9 @@ public class TestImpl {
 
 	}
 
+	/**
+	 * Test if gas pump can erogate
+	 */
 	@Test
 	public void testGasPumps() {
 		log.debug("Starting testGasPumps()");
@@ -72,6 +93,11 @@ public class TestImpl {
 
 	}
 
+	/**
+	 * Test the sales
+	 * 
+	 * TODO: to be tested in a full cycle
+	 */
 	@Test
 	public void testSales() {
 		log.debug("Starting testSales()");
@@ -81,6 +107,9 @@ public class TestImpl {
 		assertNotNull(gsi.getNumberOfSales());
 	}
 
+	/**
+	 * We try to buy gas when there's no pump and when the price is higher than expected
+	 */
 	@Test
 	public void testBuyGas() {
 		log.debug("Starting testBuyGas()");

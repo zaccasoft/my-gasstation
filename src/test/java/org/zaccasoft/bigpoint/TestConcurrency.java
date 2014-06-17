@@ -22,20 +22,47 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaccasoft.bigpoint.impl.GasStationImpl;
 
+/**
+ * Purpose of the class is to test concurrency on Gas Station and Gas Pumps
+ * 
+ * @author frza
+ *
+ */
 public class TestConcurrency {
 
+	/*
+	 * Application logger
+	 */
 	private static Logger log = Logger.getLogger("my-gasstation");
 
+	/*
+	 * The implementation of Gas Station interface
+	 */
 	private GasStationImpl gsi;
 
+	/*
+	 * Total threads to create during the test
+	 */
 	private int threadCount = 1000;
 
+	/*
+	 * The amount to serve to each customer (keep it low to achieve a shot testing time, due the fixed time of erogation in GasPump)
+	 */
 	private double serveEach = 0.5d;
 
+	/*
+	 * Simple and straightforward price.
+	 */
 	private double price = 1.0d;
 
+	/*
+	 * A dynamic list of gas types
+	 */
 	private static List<GasType> gasType = new ArrayList<GasType>();
-
+	
+	/**
+	 * Let's fill the Gas Station with enough pumps and gas to serve all the expected customers 
+	 */
 	@Before
 	public void setUp() {
 		gsi = new GasStationImpl();
@@ -54,16 +81,32 @@ public class TestConcurrency {
 
 	}
 
+	/**
+	 * Try to test the concurrency with threads
+	 * 
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	@Test
 	public void testALotOfPeople() throws InterruptedException, ExecutionException {
 		askForGas(threadCount);
 	}
 
+	/**
+	 * Instead of writing whole test is cleaner to call the threaded tests with a counter
+	 * 
+	 * @param threadCount
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	private void askForGas(final int threadCount) throws InterruptedException, ExecutionException {
 		long setup = System.currentTimeMillis();
 		final CustomerNumberGenerator customerId = new CustomerNumberGenerator();
 		final RandomGasTypeGenerator gas = new RandomGasTypeGenerator();
-
+		
+		/*
+		 * The task is: create a customer, pick a random gas type and try to serve the customer.
+		 */
 		Callable<Double> task = new Callable<Double>() {
 			public Double call() throws NotEnoughGasException, GasTooExpensiveException {
 				Long response = customerId.nextId();
@@ -85,6 +128,7 @@ public class TestConcurrency {
 		long elapsed = System.currentTimeMillis() - start;
 		double estimated = 100 /* ms pump busy */* threadCount * serveEach / gasType.size();
 		log.debug("elapsed: " + elapsed + "ms - estimated: " + estimated + "ms - setupTime: " + setupTime + "ms ");
+		//a simple way to check if concurrency is ok
 		assertTrue((estimated + setupTime) * 1.2d >= elapsed);
 	}
 
