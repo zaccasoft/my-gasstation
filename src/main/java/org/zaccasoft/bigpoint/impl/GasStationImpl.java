@@ -89,15 +89,17 @@ public class GasStationImpl implements GasStation {
 		}
 
 		for (GasPump p : gasPumps) {
-			/*
-			 * TODO: there's no isPumpFree method to check if it is free or not.
-			 * Locking the pump leads to queue too and several pumps could not
-			 * scale
-			 */
-			if (p.getGasType().equals(type)) {
-				// the current pump is locked, so concurrent customers must
-				// queue and wait the gas sale
-				synchronized (p) {
+			synchronized (p) {
+				/*
+				 * TODO: there's no isPumpFree method to check if it is free or
+				 * not. Locking the pump leads to queue too and several pumps
+				 * could not scale, due to first come first served queue
+				 */
+				if (p.getGasType().equals(type)) {
+					log.debug("Ok, found a " + type + " pump!");
+					// the current pump is locked, so concurrent customers must
+					// queue and wait the gas sale
+
 					if (p.getRemainingAmount() >= amountInLiters) {
 						double originalAmount = p.getRemainingAmount();
 
@@ -113,11 +115,12 @@ public class GasStationImpl implements GasStation {
 
 						return priceToPay;
 					}
-				}
-			} else {
-				continue;
-			}
 
+				} else {
+					log.debug("Was looking for " + type + " and skipped " + p.getGasType());
+					continue;
+				}
+			}
 		}
 
 		cancelNoGas++;
